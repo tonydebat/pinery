@@ -115,7 +115,9 @@ WHERE oo.status_id = s.status_id
 	AND ooff.order_form_id = oo.order_form_id
 	AND order_id = ?
 
--- Name: /pinery/orders
+-- TODO: Naming convention:  rename this to /pinery/orders but that name is taken (old query), will update after chat with Tony ...
+-- Name: /pinery/ordersParams/{created_after_date} 
+-- Example format of {date} is YYYY-MM-DD{T12:00:00-05:00}, time is optional
 -- Description: LIMS API orders query
 -- Application Properties: ordersList
 
@@ -141,6 +143,7 @@ WHERE oo.status_id = s.status_id
 	AND ocd.data = obsc.choice_id
 	AND ooff.display_label LIKE 'Platform'
 	AND ooff.order_form_id = oo.order_form_id
+	AND oo.created_at > ?
 
 -- Name: /pinery/ordersample/{id}
 -- Description: LIMS API order sample query
