@@ -7,11 +7,13 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,8 @@ import ca.on.oicr.ws.dto.OrderDto;
 import ca.on.oicr.ws.dto.OrderDtoSample;
 
 import com.google.common.collect.Lists;
+
+import org.joda.time.DateTime;
 
 @Component
 @Path("/")
@@ -49,8 +53,17 @@ public class OrderResource {
    @GET
    @Produces({ "application/json" })
    @Path("/orders")
-   public List<OrderDto> getOrders() {
-      List<Order> orders = orderService.getOrder();
+   public List<OrderDto> getOrders(@QueryParam("after") String after) {
+		DateTime afterDateTime = null;
+	try{
+		if(after != null && !after.equals("")) {
+			afterDateTime = DateTime.parse(after);			
+		}
+	}
+	catch (IllegalArgumentException e) {
+		throw new BadRequestException("Invalid date format in parameter [after]. Use IS08601 formatting. " + e.getMessage(), e);
+	}
+      List<Order> orders = orderService.getOrders(afterDateTime);
       if (orders.isEmpty()) {
          throw new NotFoundException("", Response.noContent().status(Status.NOT_FOUND).build());
       }
