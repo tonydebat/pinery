@@ -2,6 +2,7 @@ package ca.on.oicr.pinery.service.impl;
 
 import java.util.List;
 
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +17,8 @@ public class DefaultOrderService implements OrderService {
    private Lims lims;
 
    @Override
-   public List<Order> getOrder() {
-      return lims.getOrders();
+   public List<Order> getOrders(DateTime after) {
+      return lims.getOrders(after);
    }
 
    @Override
