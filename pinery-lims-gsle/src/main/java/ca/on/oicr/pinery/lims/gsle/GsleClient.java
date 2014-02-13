@@ -747,7 +747,7 @@ public class GsleClient implements Lims {
    }
 
    List<Order> getOrders(Reader reader) throws SAXException, JAXBException {
-
+      //System.out.println("\n In >>>>>>>>  [GsleClient :: getOrders(Reader reader)] :: line 750::: CALLED WITH: " + reader.toString());
       CSVReader csvReader = new CSVReader(reader, '\t');
       HeaderColumnNameTranslateMappingStrategy<GsleOrder> strat = new HeaderColumnNameTranslateMappingStrategy<GsleOrder>();
       strat.setType(GsleOrder.class);
@@ -765,10 +765,10 @@ public class GsleClient implements Lims {
       strat.setColumnMapping(map);
 
       CsvToBean<GsleOrder> csvToBean = new CsvToBean<GsleOrder>();
-      List<GsleOrder> gsleOrder = csvToBean.parse(strat, csvReader);
-
+      List<GsleOrder> gsleOrders = csvToBean.parse(strat, csvReader);
       List<Order> orders = Lists.newArrayList();
-      for (Order defaultOrder : gsleOrder) {
+      for (Order defaultOrder : gsleOrders) {
+      	//System.out.println("\n[GsleClient :: getOrders(Reader reader)] :: line 773::: ADDING ORDER ++++ " + defaultOrder);
          orders.add(defaultOrder);
       }
 
@@ -789,11 +789,12 @@ public class GsleClient implements Lims {
             order.setSample(samples);
          }
       }
+      //System.out.println("\n[GsleClient :: getOrders(Reader reader)] :: line 794:::returning ORDERS ! ");
 
       return orders;
    }
 
-   List<Order> getOrders(Reader reader, Integer id) throws SAXException, JAXBException {
+   List<Order> getOrder(Reader reader, Integer id) throws SAXException, JAXBException {
       CSVReader csvReader = new CSVReader(reader, '\t');
       HeaderColumnNameTranslateMappingStrategy<GsleOrder> strat = new HeaderColumnNameTranslateMappingStrategy<GsleOrder>();
       strat.setType(GsleOrder.class);
@@ -975,29 +976,41 @@ public class GsleClient implements Lims {
       return result;
    }
 
+	private List<Order> getOrders() {
+		return getOrders();
+	}
+
    @Override
-   public List<Order> getOrders() {
+   public List<Order> getOrders(DateTime after) {
+     	//if date parameter is not provided, pretend it's localtime and year is 2005 
+		if (after == null) {
+         after = DateTime.now().withYear(2005);
+      }
 
-      List<Order> result = Lists.newArrayList();
+      StringBuilder sb = getBaseUrl(ordersList);
+      //System.out.println("\n In >>>>>>>>  [GsleClient :: getOrders(DateTime after)] :: line 992::: QueryString = "  + sb.toString());
+		sb.append(getDateSqlString(after));
+      //System.out.println("\n[GsleClient :: getOrders(DateTime after)] :: line 994::: w/ DATE QueryString = "  + sb.toString());
+		log.error(">>>>> ORDERS url >>>>>>  ", sb.toString());
 
-      StringBuilder url = getBaseUrl(ordersList);
       try {
-         ClientRequest request = new ClientRequest(url.toString());
+         ClientRequest request = new ClientRequest(sb.toString());
          request.accept("text/plain");
          ClientResponse<String> response = request.get(String.class);
 
          if (response.getStatus() != 200) {
-            throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
+	         throw new RuntimeException("Failed : HTTP error code : " + response.getStatus());
          }
 
          BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(response.getEntity().getBytes(UTF8)), UTF8));
-         result = getOrders(br);
+      	//System.out.println("\n[GsleClient :: getOrders(DateTime after)] :: line 1007::: returning LIST of orders !!!);
+			return getOrders(br);
 
       } catch (Exception e) {
          System.out.println(e);
          e.printStackTrace(System.out);
       }
-      return result;
+      return null;
    }
 
    @Override
@@ -1018,7 +1031,8 @@ public class GsleClient implements Lims {
          }
 
          BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(response.getEntity().getBytes(UTF8)), UTF8));
-         List<Order> orders = getOrders(br, id);
+
+         List<Order> orders = getOrder(br, id);
          if (orders.size() == 1) {
             result = orders.get(0);
          }
