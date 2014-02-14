@@ -746,97 +746,7 @@ public class GsleClient implements Lims {
       return result;
    }
 
-   List<Order> getOrders(Reader reader) throws SAXException, JAXBException {
-      //System.out.println("\n In >>>>>>>>  [GsleClient :: getOrders(Reader reader)] :: line 750::: CALLED WITH: " + reader.toString());
-      CSVReader csvReader = new CSVReader(reader, '\t');
-      HeaderColumnNameTranslateMappingStrategy<GsleOrder> strat = new HeaderColumnNameTranslateMappingStrategy<GsleOrder>();
-      strat.setType(GsleOrder.class);
-      Map<String, String> map = Maps.newHashMap();
 
-      map.put("id", "idString");
-      map.put("created_by", "createdByIdString");
-      map.put("created_at", "createdDateString");
-      map.put("modified_by", "modifiedByIdString");
-      map.put("modified_at", "modifiedDateString");
-      map.put("status", "status");
-      map.put("project", "project");
-      map.put("platform", "platform");
-
-      strat.setColumnMapping(map);
-
-      CsvToBean<GsleOrder> csvToBean = new CsvToBean<GsleOrder>();
-      List<GsleOrder> gsleOrders = csvToBean.parse(strat, csvReader);
-      List<Order> orders = Lists.newArrayList();
-      for (Order defaultOrder : gsleOrders) {
-      	//System.out.println("\n[GsleClient :: getOrders(Reader reader)] :: line 773::: ADDING ORDER ++++ " + defaultOrder);
-         orders.add(defaultOrder);
-      }
-
-      List<TemporaryOrder> getTemporary = getTemporaryOrder();
-      Map<String, Set<Attribute>> attributeOrderMap = attributeOrderMap(getTemporary);
-      Map<Integer, Set<OrderSample>> sampleOrderMap = sampleOrderMap(getTemporary);
-
-      for (Order order : orders) {
-         if (sampleOrderMap.containsKey(order.getId())) {
-            Set<OrderSample> samples = sampleOrderMap.get(order.getId());
-            for (OrderSample orderSample : samples) {
-               if (attributeOrderMap.containsKey(order.getId() + "_" + orderSample.getId())) {
-                  Set<Attribute> attributes = attributeOrderMap.get(order.getId() + "_" + orderSample.getId());
-                  orderSample.setAttributes(attributes);
-
-               }
-            }
-            order.setSample(samples);
-         }
-      }
-      //System.out.println("\n[GsleClient :: getOrders(Reader reader)] :: line 794:::returning ORDERS ! ");
-
-      return orders;
-   }
-
-   List<Order> getOrder(Reader reader, Integer id) throws SAXException, JAXBException {
-      CSVReader csvReader = new CSVReader(reader, '\t');
-      HeaderColumnNameTranslateMappingStrategy<GsleOrder> strat = new HeaderColumnNameTranslateMappingStrategy<GsleOrder>();
-      strat.setType(GsleOrder.class);
-      Map<String, String> map = Maps.newHashMap();
-
-      map.put("id", "idString");
-      map.put("created_by", "createdByIdString");
-      map.put("created_at", "createdDateString");
-      map.put("modified_by", "modifiedByIdString");
-      map.put("modified_at", "modifiedDateString");
-      map.put("status", "status");
-      map.put("project", "project");
-      map.put("platform", "platform");
-
-      strat.setColumnMapping(map);
-
-      CsvToBean<GsleOrder> csvToBean = new CsvToBean<GsleOrder>();
-      List<GsleOrder> gsleOrder = csvToBean.parse(strat, csvReader);
-
-      List<Order> orders = Lists.newArrayList();
-      for (Order defaultOrder : gsleOrder) {
-         orders.add(defaultOrder);
-      }
-
-      List<TemporaryOrder> getTemporary = getTemporaryOrder(id);
-      Map<String, Set<Attribute>> attributeOrderMap = attributeOrderMap(getTemporary);
-      Map<Integer, Set<OrderSample>> sampleOrderMap = sampleOrderMap(getTemporary);
-
-      for (Order order : orders) {
-         if (sampleOrderMap.containsKey(order.getId())) {
-            Set<OrderSample> samples = sampleOrderMap.get(order.getId());
-            for (OrderSample orderSample : samples) {
-               if (attributeOrderMap.containsKey(order.getId() + "_" + orderSample.getId())) {
-                  Set<Attribute> attributes = attributeOrderMap.get(order.getId() + "_" + orderSample.getId());
-                  orderSample.setAttributes(attributes);
-               }
-            }
-            order.setSample(samples);
-         }
-      }
-      return orders;
-   }
 
    public List<TemporaryOrder> createMap(Reader reader) throws IOException {
 
@@ -977,7 +887,7 @@ public class GsleClient implements Lims {
    }
 
 	private List<Order> getOrders() {
-		return getOrders();
+		return getOrders(null);
 	}
 
    @Override
@@ -1004,7 +914,7 @@ public class GsleClient implements Lims {
 
          BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(response.getEntity().getBytes(UTF8)), UTF8));
       	//System.out.println("\n[GsleClient :: getOrders(DateTime after)] :: line 1007::: returning LIST of orders !!!);
-			return getOrders(br);
+			return getOrdersReader(br);
 
       } catch (Exception e) {
          System.out.println(e);
@@ -1042,6 +952,98 @@ public class GsleClient implements Lims {
          e.printStackTrace(System.out);
       }
       return result;
+   }
+
+   List<Order> getOrdersReader(Reader reader) throws SAXException, JAXBException {
+      //System.out.println("\n In >>>>>>>>  [GsleClient :: getOrders(Reader reader)] :: line 750::: CALLED WITH: " + reader.toString());
+      CSVReader csvReader = new CSVReader(reader, '\t');
+      HeaderColumnNameTranslateMappingStrategy<GsleOrder> strat = new HeaderColumnNameTranslateMappingStrategy<GsleOrder>();
+      strat.setType(GsleOrder.class);
+      Map<String, String> map = Maps.newHashMap();
+
+      map.put("id", "idString");
+      map.put("created_by", "createdByIdString");
+      map.put("created_at", "createdDateString");
+      map.put("modified_by", "modifiedByIdString");
+      map.put("modified_at", "modifiedDateString");
+      map.put("status", "status");
+      map.put("project", "project");
+      map.put("platform", "platform");
+
+      strat.setColumnMapping(map);
+
+      CsvToBean<GsleOrder> csvToBean = new CsvToBean<GsleOrder>();
+      List<GsleOrder> gsleOrders = csvToBean.parse(strat, csvReader);
+      List<Order> orders = Lists.newArrayList();
+      for (Order defaultOrder : gsleOrders) {
+      	//System.out.println("\n[GsleClient :: getOrders(Reader reader)] :: line 773::: ADDING ORDER ++++ " + defaultOrder);
+         orders.add(defaultOrder);
+      }
+
+      List<TemporaryOrder> getTemporary = getTemporaryOrder();
+      Map<String, Set<Attribute>> attributeOrderMap = attributeOrderMap(getTemporary);
+      Map<Integer, Set<OrderSample>> sampleOrderMap = sampleOrderMap(getTemporary);
+
+      for (Order order : orders) {
+         if (sampleOrderMap.containsKey(order.getId())) {
+            Set<OrderSample> samples = sampleOrderMap.get(order.getId());
+            for (OrderSample orderSample : samples) {
+               if (attributeOrderMap.containsKey(order.getId() + "_" + orderSample.getId())) {
+                  Set<Attribute> attributes = attributeOrderMap.get(order.getId() + "_" + orderSample.getId());
+                  orderSample.setAttributes(attributes);
+
+               }
+            }
+            order.setSample(samples);
+         }
+      }
+      //System.out.println("\n[GsleClient :: getOrders(Reader reader)] :: line 794:::returning ORDERS ! ");
+
+      return orders;
+   }
+
+   List<Order> getOrder(Reader reader, Integer id) throws SAXException, JAXBException {
+      CSVReader csvReader = new CSVReader(reader, '\t');
+      HeaderColumnNameTranslateMappingStrategy<GsleOrder> strat = new HeaderColumnNameTranslateMappingStrategy<GsleOrder>();
+      strat.setType(GsleOrder.class);
+      Map<String, String> map = Maps.newHashMap();
+
+      map.put("id", "idString");
+      map.put("created_by", "createdByIdString");
+      map.put("created_at", "createdDateString");
+      map.put("modified_by", "modifiedByIdString");
+      map.put("modified_at", "modifiedDateString");
+      map.put("status", "status");
+      map.put("project", "project");
+      map.put("platform", "platform");
+
+      strat.setColumnMapping(map);
+
+      CsvToBean<GsleOrder> csvToBean = new CsvToBean<GsleOrder>();
+      List<GsleOrder> gsleOrder = csvToBean.parse(strat, csvReader);
+
+      List<Order> orders = Lists.newArrayList();
+      for (Order defaultOrder : gsleOrder) {
+         orders.add(defaultOrder);
+      }
+
+      List<TemporaryOrder> getTemporary = getTemporaryOrder(id);
+      Map<String, Set<Attribute>> attributeOrderMap = attributeOrderMap(getTemporary);
+      Map<Integer, Set<OrderSample>> sampleOrderMap = sampleOrderMap(getTemporary);
+
+      for (Order order : orders) {
+         if (sampleOrderMap.containsKey(order.getId())) {
+            Set<OrderSample> samples = sampleOrderMap.get(order.getId());
+            for (OrderSample orderSample : samples) {
+               if (attributeOrderMap.containsKey(order.getId() + "_" + orderSample.getId())) {
+                  Set<Attribute> attributes = attributeOrderMap.get(order.getId() + "_" + orderSample.getId());
+                  orderSample.setAttributes(attributes);
+               }
+            }
+            order.setSample(samples);
+         }
+      }
+      return orders;
    }
 
    List<Run> getRuns(Reader reader) throws SAXException, JAXBException {
