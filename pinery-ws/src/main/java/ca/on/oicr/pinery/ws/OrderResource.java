@@ -1,6 +1,7 @@
 package ca.on.oicr.pinery.ws;
 
 import java.net.URI;
+import java.util.Set;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -53,17 +54,24 @@ public class OrderResource {
    @GET
    @Produces({ "application/json" })
    @Path("/orders")
-   public List<OrderDto> getOrders(@QueryParam("after") String after) {
+   public List<OrderDto> getOrders(@QueryParam("user") Set<String> users, @QueryParam("before") String before, @QueryParam("after") String after) {
+		DateTime beforeDateTime = null;
 		DateTime afterDateTime = null;
+      for (String user : users) {
+         log.debug("user={}", user);
+      }
 	try{
+		if(before != null && !before.equals("")) {
+			beforeDateTime = DateTime.parse(before);			
+		}
 		if(after != null && !after.equals("")) {
 			afterDateTime = DateTime.parse(after);			
 		}
 	}
 	catch (IllegalArgumentException e) {
-		throw new BadRequestException("Invalid date format in parameter [after]. Use IS08601 formatting. " + e.getMessage(), e);
+		throw new BadRequestException("Invalid date format in parameter [before] or [after]. Use IS08601 formatting. " + e.getMessage(), e);
 	}
-      List<Order> orders = orderService.getOrders(afterDateTime);
+      List<Order> orders = orderService.getOrders(users, beforeDateTime, afterDateTime);
       if (orders.isEmpty()) {
          throw new NotFoundException("", Response.noContent().status(Status.NOT_FOUND).build());
       }

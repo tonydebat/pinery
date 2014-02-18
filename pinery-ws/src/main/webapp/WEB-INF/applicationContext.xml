@@ -34,6 +34,7 @@
              <property name="temporaryOrderList" value="${gsle.temporaryOrdersList}" />
              <property name="temporaryOrderSingle" value="${gsle.temporaryOrderSingle}" />
              <property name="ordersList" value="${gsle.ordersList}" />
+             <property name="ordersListByAuthor" value="${gsle.ordersListByAuthor}" />
              <property name="orderSingle" value="${gsle.orderSingle}" />
              <property name="temporaryRunsList" value="${gsle.temporaryRunsList}" />
               <property name="temporaryRunSingle" value="${gsle.temporaryRunSingle}" />

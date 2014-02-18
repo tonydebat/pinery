@@ -88,6 +88,7 @@ public class GsleClient implements Lims {
    private String temporaryOrderList;
    private String temporaryOrderSingle;
    private String ordersList;
+   private String ordersListByAuthor;
    private String orderSingle;
    private String temporaryRunsList;
    private String temporaryRunSingle;
@@ -155,7 +156,17 @@ public class GsleClient implements Lims {
    }
 
    public void setOrdersList(String ordersList) {
-      this.ordersList = ordersList;
+		System.out.println("\n SETORDERSLIST ::::::: gsleclient ::::: :\n this.ordersList " + this.ordersList);
+		System.out.println("\n    --- PASSED ordersList " + ordersList);
+	    this.ordersList = ordersList;
+		System.out.println("\n AFTER ASSIGNMENT >>>>> this.ordersList " + this.ordersList);
+   }
+
+   public void setOrdersListByAuthor(String ordersListByAuthor) {
+		System.out.println("\n <<<<<<<<<<< byAUTHOR-SETORDERSLIST ::::::: gsleclient ::::: :\n this.ordersListByAuthor " + this.ordersListByAuthor);
+		System.out.println("\n    --- PASSED ordersListBYAITHRO " + ordersListByAuthor);
+      this.ordersListByAuthor = ordersListByAuthor;
+		System.out.println("\n AFTER ASSIGNMENT >>>>> this.ordersList " + this.ordersListByAuthor);
    }
 
    public void setTemporaryOrderSingle(String temporaryOrderSingle) {
@@ -410,23 +421,36 @@ public class GsleClient implements Lims {
       }
       // log.error("Inside getSamples");
 
+		System.out.println("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<GETSAMPLES\n"); 
+
       StringBuilder sb = getBaseUrl(samples);
+		System.out.println("\n !!! 1  "+sb.toString());
+
       sb.append(getArchivedSqlString(archived));
+		System.out.println("\n !!! 2  "+sb.toString());
       // sb.append(";bind=OVCA_%|ACC_%");
       if (projects != null && !projects.isEmpty()) {
          sb.append(getSetSqlString(projects, "_%"));
+		   System.out.println("\n !!! 2+projects  "+sb.toString());
       } else {
+
          sb.append(";bind=%");
+		   System.out.println("\n !!! no project flag [;bind=%] "+sb.toString());
       }
       if (types != null && !types.isEmpty()) {
          sb.append(getSetSqlString(types, null));
+		   System.out.println("\n !!! 2+?types  "+sb.toString());
       } else {
          sb.append(";bind=%");
+		   System.out.println("\n !!! no type flag [;bind=%] "+sb.toString());
       }
       sb.append(getDateSqlString(after));
       sb.append(getDateSqlString(before));
+
       log.error("Samples url [{}].", sb.toString());
-      try {
+      System.out.println("\n[GsleClient :: getSamples "  + sb.toString());
+		System.out.println("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<GETSAMPLES\n"); 
+     	try {
          ClientRequest request = new ClientRequest(sb.toString());
          // log.error("The uri is [{}].", request.getUri());
          request.accept("text/plain");
@@ -656,6 +680,7 @@ public class GsleClient implements Lims {
       sb.append(";id=");
       sb.append(sqlApiQueryId);
       sb.append(";header=1");
+		System.out.println("\n\n %%% GETBASEURL >>>>>>> " + sb.toString() );
       return sb;
    }
 
@@ -887,21 +912,62 @@ public class GsleClient implements Lims {
    }
 
 	private List<Order> getOrders() {
-		return getOrders(null);
+		return getOrders(null, null, null);
 	}
 
    @Override
-   public List<Order> getOrders(DateTime after) {
-     	//if date parameter is not provided, pretend it's localtime and year is 2005 
+   public List<Order> getOrders(Set<String> users, DateTime before, DateTime after) {
+		if (before == null) {
+         before = DateTime.now().plusDays(1);
+      }
+		
+     	//if date 'after' parameter is not provided, pretend it's localtime and year is 2005 
 		if (after == null) {
          after = DateTime.now().withYear(2005);
       }
 
-      StringBuilder sb = getBaseUrl(ordersList);
-      //System.out.println("\n In >>>>>>>>  [GsleClient :: getOrders(DateTime after)] :: line 992::: QueryString = "  + sb.toString());
+		System.out.println("\n>>>>>>>> GETorders !! !@ #@$ !@!#@!$#@$@# \n");
+
+		
+		StringBuilder sb;
+		//if users parameter is empty use the ordersList Query 
+		if(users.isEmpty()) {
+			System.out.println("\n !!!! USERS PARAMETER  WAS !!!! EMPTY :::: GET ORDERS ::::: \n");
+			sb = getBaseUrl(ordersList);
+		}
+		else {
+			System.out.println("\n NOT EMPTY :::: GET ORDERS ::::: \n");
+			sb = getBaseUrl(ordersListByAuthor);
+		}
+
+		
+		System.out.println("\n ~~ STRING SO FAR  "+sb.toString());
+
+		//Doesn't
+ 		//http://tlims.res.oicr.on.ca/SQLApi?key=7ef99f42aae721acc8bcaeb4f95067e3;id=170255;header=1;bind=196;bind=2005-02-14+17%3A12%3A48-05;bind=2014-02-15+17%3A12%3A48-05
+
+		//WORKS
+		//http://tlims.res.oicr.on.ca/SQLApi?key=7ef99f42aae721acc8bcaeb4f95067e3;id=170255;header=1;bind=2014-02-15+16%3A51%3A13-05;bind=2005-02-14+16%3A51%3A13-05;bind=96; 
+		//http://tlims.res.oicr.on.ca/SQLApi?key=7ef99f42aae721acc8bcaeb4f95067e3;id=170255;header=1;bind=96;bind=2014-02-15+16%3A51%3A13-05;bind=2005-02-14+16%3A51%3A13-05
+  
+	  System.out.println("\n= = USERS = " + users); 
+     if (users != null && !users.isEmpty()) {
+         sb.append(getSetSqlString(users, null));
+			System.out.println("\n 999 USERS FLAG IS NOT EMPTY  "+sb.toString());
+  
+      } else {
+			System.out.println("\n !!! NO users FLAG  "+sb.toString());
+      }
+
+
+		sb.append(getDateSqlString(before));
+		System.out.println("\n APPEND BEFORE ###############>>>>> ORDERS url >>>>>>  " + sb.toString());
 		sb.append(getDateSqlString(after));
-      //System.out.println("\n[GsleClient :: getOrders(DateTime after)] :: line 994::: w/ DATE QueryString = "  + sb.toString());
-		log.error(">>>>> ORDERS url >>>>>>  ", sb.toString());
+		System.out.println("\n APPEND AFTER ###############>>>>> ORDERS url >>>>>>  " + sb.toString());
+
+
+		System.out.println("\n final ###############>>>>> ORDERS url >>>>>>  " + sb.toString());
+		log.error("\n final ###############>>>>> ORDERS url >>>>>>  ", sb.toString());
 
       try {
          ClientRequest request = new ClientRequest(sb.toString());
@@ -913,8 +979,10 @@ public class GsleClient implements Lims {
          }
 
          BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(response.getEntity().getBytes(UTF8)), UTF8));
-      	//System.out.println("\n[GsleClient :: getOrders(DateTime after)] :: line 1007::: returning LIST of orders !!!);
-			return getOrdersReader(br);
+    
+      	System.out.println("\n[GsleClient :: getOrders(user before after)] :: line 1007::: returning LIST of orders !!!");
+	
+    		return getOrdersReader(br);
 
       } catch (Exception e) {
          System.out.println(e);

@@ -306,8 +306,6 @@ public class ResourceTest {
       assertThat(status, is(true));
    }
 
-//TODO update unit tests after final changes to orders query
-/*
    @Test
    public void test_Resource_10() throws Exception {
 
@@ -327,11 +325,11 @@ public class ResourceTest {
       when(uriInfoMock.getBaseUriBuilder().path("sample/").build()).thenReturn(new URI("http://test/sample/1"));
 
       OrderService orderService = mock(OrderService.class);
-      when(orderService.getOrders(null)).thenReturn(getListOrder());
+      when(orderService.getOrders(null)).thenReturn(getListOrder());//should this be null ?
       OrderResource orderResource = new OrderResource();
       orderResource.setOrderService(orderService);
       orderResource.setUriInfo(uriInfoMock);
-      List<OrderDto> orderDto = orderResource.getOrders(null);
+      List<OrderDto> orderDto = orderResource.getOrders();
 
       assertThat(orderDto, is(notNullValue()));
    }
@@ -355,12 +353,12 @@ public class ResourceTest {
       when(uriInfoMock.getBaseUriBuilder().path("sample/").build()).thenReturn(new URI("http://test/sample"));
 
       OrderService orderService = mock(OrderService.class);
-      when(orderService.getOrders(null)).thenReturn(getListOrder());
+      when(orderService.getOrder()).thenReturn(getListOrder());
       OrderResource orderResource = new OrderResource();
       orderResource.setOrderService(orderService);
       orderResource.setUriInfo(uriInfoMock);
 
-      List<OrderDto> originalListOrderDto = orderResource.getOrders(null);
+      List<OrderDto> originalListOrderDto = orderResource.getOrders();
       OrderDto orderDto = new OrderDto();
       List<OrderDto> listOrderDto = Lists.newArrayList();
       Date date = new Date();
@@ -389,7 +387,6 @@ public class ResourceTest {
       assertThat(originalListOrderDto, containsInAnyOrder(listOrderDto.toArray()));
    }
 
-*/
    private Order getOrder() {
       Order order = new DefaultOrder();
       Date date = new Date();

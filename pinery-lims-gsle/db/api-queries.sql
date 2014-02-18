@@ -143,7 +143,41 @@ WHERE oo.status_id = s.status_id
 	AND ocd.data = obsc.choice_id
 	AND ooff.display_label LIKE 'Platform'
 	AND ooff.order_form_id = oo.order_form_id
-	AND oo.created_at > ?
+	AND oo.modified_at < ?
+	AND oo.modified_at > ?
+
+-- Note: This query is used if the url request contains "user="
+--       the almost identical '/pinery/orders' query could have been used by adding 'created_by like ?' then matching by default '%' 
+--       the integer field 'created_by' can be implict type casted as text, but this is cleaner
+-- Name: /pinery/ordersByAuthor
+-- Description: LIMS API ordersByAuthor query
+-- Application Properties: ordersListByAuthor
+
+SELECT DISTINCT order_id AS id
+	,oo.created_by
+	,oo.created_at
+	,oo.modified_by
+	,oo.modified_at
+	,s.label AS STATUS
+	,lg.lg_name AS project
+	,obsc.label AS platform
+FROM om_order oo
+	,STATUS s
+	,lab_group lg
+	,om_order_form OF
+	,om_custom_data ocd
+	,om_order_form_field ooff
+	,om_bfield_selection_choice obsc
+WHERE oo.status_id = s.status_id
+	AND oo.lab_group_id = lg.lab_group_id
+	AND oo.order_form_id = OF.order_form_id
+	AND ocd.form_field_id = ooff.form_field_id
+	AND ocd.data = obsc.choice_id
+	AND ooff.display_label LIKE 'Platform'
+	AND ooff.order_form_id = oo.order_form_id
+	AND created_by = ? 
+	AND oo.modified_at < ?
+	AND oo.modified_at > ?
 
 -- Name: /pinery/ordersample/{id}
 -- Description: LIMS API order sample query
