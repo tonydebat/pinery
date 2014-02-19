@@ -162,13 +162,6 @@ public class GsleClient implements Lims {
 		System.out.println("\n AFTER ASSIGNMENT >>>>> this.ordersList " + this.ordersList);
    }
 
-   public void setOrdersListByAuthor(String ordersListByAuthor) {
-		System.out.println("\n <<<<<<<<<<< byAUTHOR-SETORDERSLIST ::::::: gsleclient ::::: :\n this.ordersListByAuthor " + this.ordersListByAuthor);
-		System.out.println("\n    --- PASSED ordersListBYAITHRO " + ordersListByAuthor);
-      this.ordersListByAuthor = ordersListByAuthor;
-		System.out.println("\n AFTER ASSIGNMENT >>>>> this.ordersList " + this.ordersListByAuthor);
-   }
-
    public void setTemporaryOrderSingle(String temporaryOrderSingle) {
       this.temporaryOrderSingle = temporaryOrderSingle;
    }
@@ -936,17 +929,7 @@ public class GsleClient implements Lims {
 
 		System.out.println("\n>>>>>>>>>>>> GETorders !! !@ #@$ !@!#@!$#@$@# \n");
 
-		StringBuilder sb;
-		//if users parameter is empty use the ordersList Query 
-		if(users.isEmpty()) {
-			System.out.println("\n !!!! USERS PARAMETER  WAS !!!! EMPTY :::: GET ORDERS ::::: \n");
-			sb = getBaseUrl(ordersList);
-		}
-		else {
-			System.out.println("\n NOT EMPTY :::: GET ORDERS ::::: \n");
-			sb = getBaseUrl(ordersListByAuthor);
-		}
-
+		StringBuilder sb = getBaseUrl(ordersList);
 		
 		System.out.println("\n ~~ STRING SO FAR  "+sb.toString());
 
@@ -954,8 +937,8 @@ public class GsleClient implements Lims {
      if (users != null && !users.isEmpty()) {
          sb.append(getSetSqlString(users, null));
 			System.out.println("\n 999 USERS FLAG IS NOT EMPTY  "+sb.toString());
-  
       } else {
+         sb.append(";bind=%");
 			System.out.println("\n !!! NO users FLAG  "+sb.toString());
       }
 
