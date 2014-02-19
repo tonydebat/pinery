@@ -720,6 +720,22 @@ public class GsleClient implements Lims {
       return ";bind=" + sb.toString();
    }
 
+	DateTime getDefaultAfterDateIfNull(DateTime date) {
+		if(date == null) {
+			date = DateTime.now().withYear(2005);
+			System.out.println("\n\n :::::::::: GOT NULL DATE , DATE SET TO " + date );
+		}
+		return date;	
+	}
+
+	DateTime getDefaultBeforeDateIfNull(DateTime date) {
+		if(date == null) {
+			date = DateTime.now().plusDays(1);
+			System.out.println("\n\n :::::::::: GOT NULL DATE , DATE SET TO " + date );
+		}
+		return date;	
+	}
+
    @Override
    public List<User> getUsers() {
       List<User> result = Lists.newArrayList();
@@ -912,23 +928,14 @@ public class GsleClient implements Lims {
    }
 
 	private List<Order> getOrders() {
-		return getOrders(null, null, null);
+		return getOrders(null, null, null, null, null);
 	}
 
    @Override
-   public List<Order> getOrders(Set<String> users, DateTime before, DateTime after) {
-		if (before == null) {
-         before = DateTime.now().plusDays(1);
-      }
-		
-     	//if date 'after' parameter is not provided, pretend it's localtime and year is 2005 
-		if (after == null) {
-         after = DateTime.now().withYear(2005);
-      }
+   public List<Order> getOrders(Set<String> users, DateTime modified_before, DateTime modified_after, DateTime created_before, DateTime created_after) {
 
-		System.out.println("\n>>>>>>>> GETorders !! !@ #@$ !@!#@!$#@$@# \n");
+		System.out.println("\n>>>>>>>>>>>> GETorders !! !@ #@$ !@!#@!$#@$@# \n");
 
-		
 		StringBuilder sb;
 		//if users parameter is empty use the ordersList Query 
 		if(users.isEmpty()) {
@@ -943,13 +950,6 @@ public class GsleClient implements Lims {
 		
 		System.out.println("\n ~~ STRING SO FAR  "+sb.toString());
 
-		//Doesn't
- 		//http://tlims.res.oicr.on.ca/SQLApi?key=7ef99f42aae721acc8bcaeb4f95067e3;id=170255;header=1;bind=196;bind=2005-02-14+17%3A12%3A48-05;bind=2014-02-15+17%3A12%3A48-05
-
-		//WORKS
-		//http://tlims.res.oicr.on.ca/SQLApi?key=7ef99f42aae721acc8bcaeb4f95067e3;id=170255;header=1;bind=2014-02-15+16%3A51%3A13-05;bind=2005-02-14+16%3A51%3A13-05;bind=96; 
-		//http://tlims.res.oicr.on.ca/SQLApi?key=7ef99f42aae721acc8bcaeb4f95067e3;id=170255;header=1;bind=96;bind=2014-02-15+16%3A51%3A13-05;bind=2005-02-14+16%3A51%3A13-05
-  
 	  System.out.println("\n= = USERS = " + users); 
      if (users != null && !users.isEmpty()) {
          sb.append(getSetSqlString(users, null));
@@ -959,12 +959,14 @@ public class GsleClient implements Lims {
 			System.out.println("\n !!! NO users FLAG  "+sb.toString());
       }
 
-
-		sb.append(getDateSqlString(before));
-		System.out.println("\n APPEND BEFORE ###############>>>>> ORDERS url >>>>>>  " + sb.toString());
-		sb.append(getDateSqlString(after));
-		System.out.println("\n APPEND AFTER ###############>>>>> ORDERS url >>>>>>  " + sb.toString());
-
+		sb.append(getDateSqlString(getDefaultBeforeDateIfNull(modified_before)));
+		System.out.println("\n APPEND modified BEFORE ###############>>>>> ORDERS url >>>>>>  " + sb.toString());
+		sb.append(getDateSqlString(getDefaultAfterDateIfNull(modified_after)));
+		System.out.println("\n APPEND modified AFTER ###############>>>>> ORDERS url >>>>>>  " + sb.toString());
+		sb.append(getDateSqlString(getDefaultBeforeDateIfNull(created_before)));
+		System.out.println("\n APPEND created BEFORE ###############>>>>> ORDERS url >>>>>>  " + sb.toString());
+		sb.append(getDateSqlString(getDefaultAfterDateIfNull(created_after)));
+		System.out.println("\n APPEND created AFTER ###############>>>>> ORDERS url >>>>>>  " + sb.toString());
 
 		System.out.println("\n final ###############>>>>> ORDERS url >>>>>>  " + sb.toString());
 		log.error("\n final ###############>>>>> ORDERS url >>>>>>  ", sb.toString());
