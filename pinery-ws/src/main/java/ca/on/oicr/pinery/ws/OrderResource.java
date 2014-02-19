@@ -54,24 +54,38 @@ public class OrderResource {
    @GET
    @Produces({ "application/json" })
    @Path("/orders")
-   public List<OrderDto> getOrders(@QueryParam("user") Set<String> users, @QueryParam("before") String before, @QueryParam("after") String after) {
-		DateTime beforeDateTime = null;
-		DateTime afterDateTime = null;
+   public List<OrderDto> getOrders(@QueryParam("user") Set<String> users,@QueryParam("modified_before") String modified_before, 
+											  @QueryParam("modified_after") String modified_after,@QueryParam("created_before") String created_before, 
+											  @QueryParam("created_after") String created_after) {
+
+		DateTime mod_before = null;
+		DateTime mod_after = null;
+		DateTime crt_before = null;
+		DateTime crt_after = null;
+
       for (String user : users) {
          log.debug("user={}", user);
       }
 	try{
-		if(before != null && !before.equals("")) {
-			beforeDateTime = DateTime.parse(before);			
+		//TODO: DRY code
+		if(modified_before != null && !modified_before.equals("")) {
+			mod_before = DateTime.parse(modified_before);			
 		}
-		if(after != null && !after.equals("")) {
-			afterDateTime = DateTime.parse(after);			
+		if(modified_after != null && !modified_after.equals("")) {
+			mod_after = DateTime.parse(modified_after);			
 		}
+		if(created_before != null && !created_before.equals("")) {
+			crt_before = DateTime.parse(created_before);			
+		}
+		if(created_after != null && !created_after.equals("")) {
+			crt_after = DateTime.parse(created_after);			
+		}
+
 	}
 	catch (IllegalArgumentException e) {
-		throw new BadRequestException("Invalid date format in parameter [before] or [after]. Use IS08601 formatting. " + e.getMessage(), e);
+		throw new BadRequestException("Invalid date format in parameter(s) [modified/created before/after]. Use IS08601 formatting. " + e.getMessage(), e);
 	}
-      List<Order> orders = orderService.getOrders(users, beforeDateTime, afterDateTime);
+      List<Order> orders = orderService.getOrders(users, mod_before, mod_after, crt_before, crt_after);
       if (orders.isEmpty()) {
          throw new NotFoundException("", Response.noContent().status(Status.NOT_FOUND).build());
       }
