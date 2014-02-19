@@ -12,8 +12,8 @@ import ca.on.oicr.pinery.api.User;
 			
 public interface OrderService {
 
-   public List<Order> getOrders(Set<String> users, DateTime before, DateTime after);
-	
+   public List<Order> getOrders(Set<String> users, DateTime modified_before, DateTime modified_after, DateTime created_before, DateTime created_after);	
+
 	public List<User> getUsers();
 
    public Order getOrder(Integer id);

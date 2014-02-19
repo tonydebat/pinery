@@ -19,8 +19,8 @@ public class DefaultOrderService implements OrderService {
    private Lims lims;
 
    @Override
-   public List<Order> getOrders(Set<String> users, DateTime before, DateTime after) {
-      return lims.getOrders(users,before, after);
+   public List<Order> getOrders(Set<String> users, DateTime modified_before, DateTime modified_after, DateTime created_before, DateTime created_after) {
+      return lims.getOrders(users,modified_before, modified_after, created_before, created_after);
    }
 
 	@Override
