@@ -145,9 +145,11 @@ WHERE oo.status_id = s.status_id
 	AND ooff.order_form_id = oo.order_form_id
 	AND oo.modified_at < ?
 	AND oo.modified_at > ?
+	AND oo.created_at < ?
+	AND oo.created_at > ?
 
--- Note: This query is used if the url request contains "user="
---       the almost identical '/pinery/orders' query could have been used by adding 'created_by like ?' then matching by default '%' 
+-- Note: This query is used if the url request contains "user=
+--       the almost identical '/pinery/orders' query could have been used by adding 'created_by SIMILAR TO ?' then matching by default '%' 
 --       the integer field 'created_by' can be implict type casted as text, but this is cleaner
 -- Name: /pinery/ordersByAuthor
 -- Description: LIMS API ordersByAuthor query
@@ -178,6 +180,8 @@ WHERE oo.status_id = s.status_id
 	AND created_by = ? 
 	AND oo.modified_at < ?
 	AND oo.modified_at > ?
+	AND oo.created_at < ?
+	AND oo.created_at > ?
 
 -- Name: /pinery/ordersample/{id}
 -- Description: LIMS API order sample query
