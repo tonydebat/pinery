@@ -25,7 +25,8 @@ public interface Lims {
 
    public User getUser(Integer id);
 
-   public List<Order> getOrders(Set<String> users, DateTime before, DateTime after);
+   public List<Order> getOrders(Set<String> users, DateTime modified_before, DateTime modified_after, DateTime created_before, DateTime
+created_after);
 
    public Order getOrder(Integer id);
 
