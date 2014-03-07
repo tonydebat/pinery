@@ -433,27 +433,35 @@ public class ResourceTest {
 		boolean flag_2 = false;
 		boolean flag_3 = false;
 		boolean flag_4 = false;
-
+		//TODO: DRY THIS ??
+		// >  use 'catch-exception package' with mockito to replace try and catch blocks 
+		// >  use reflection
+		// > 	use Callable, command pattern
+		// > 	Move the function call to orderResource.getOrders to a seprate method 
+		
  		try {
 			List<OrderDto> originalListOrderDto = orderResource.getOrders(null,null,dateNextYear.toString(),null,null);
 		}
 		catch (NotFoundException e) {
 			flag_1 = true;
 		}
+
  		try {
-			List<OrderDto> originalListOrderDto2 = orderResource.getOrders(null,null,null,null,dateNextYear.toString());
+			List<OrderDto> originalListOrderDto = orderResource.getOrders(null,null,null,null,dateNextYear.toString());
 		}
 		catch (NotFoundException e) {
 			flag_2 = true;
 		}
+
  		try {
-			List<OrderDto> originalListOrderDto2 = orderResource.getOrders(null,beforeOicrExisted.toString(),null,null,null);
+			List<OrderDto> originalListOrderDto = orderResource.getOrders(null,beforeOicrExisted.toString(),null,null,null);
 		}
 		catch (NotFoundException e) {
 			flag_3 = true;
 		}
+
  		try {
-			List<OrderDto> originalListOrderDto2 = orderResource.getOrders(invalidUserIds,null,null,null,null);
+			List<OrderDto> originalListOrderDto = orderResource.getOrders(invalidUserIds,null,null,null,null);
 		}
 		catch (NotFoundException e) {
 			flag_4 = true;
