@@ -63,9 +63,6 @@ public class OrderResource {
 		DateTime crt_before = null;
 		DateTime crt_after = null;
 
-      for (String user : users) {
-         log.debug("user={}", user);
-      }
 	try{
 		//TODO: DRY code
 		if(modified_before != null && !modified_before.equals("")) {
