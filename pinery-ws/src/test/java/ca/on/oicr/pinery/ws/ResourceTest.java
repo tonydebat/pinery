@@ -13,6 +13,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.joda.time.DateTime; 
+
+
+import org.jboss.resteasy.spi.NotFoundException;
+
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
@@ -306,8 +311,6 @@ public class ResourceTest {
       assertThat(status, is(true));
    }
 
-//TODO update unit tests after final changes to orders query
-/*
    @Test
    public void test_Resource_10() throws Exception {
 
@@ -327,11 +330,11 @@ public class ResourceTest {
       when(uriInfoMock.getBaseUriBuilder().path("sample/").build()).thenReturn(new URI("http://test/sample/1"));
 
       OrderService orderService = mock(OrderService.class);
-      when(orderService.getOrders(null)).thenReturn(getListOrder());
+      when(orderService.getOrders(null,null,null,null,null)).thenReturn(getListOrder());
       OrderResource orderResource = new OrderResource();
       orderResource.setOrderService(orderService);
       orderResource.setUriInfo(uriInfoMock);
-      List<OrderDto> orderDto = orderResource.getOrders(null);
+      List<OrderDto> orderDto = orderResource.getOrders(null,null,null,null,null);
 
       assertThat(orderDto, is(notNullValue()));
    }
@@ -355,12 +358,12 @@ public class ResourceTest {
       when(uriInfoMock.getBaseUriBuilder().path("sample/").build()).thenReturn(new URI("http://test/sample"));
 
       OrderService orderService = mock(OrderService.class);
-      when(orderService.getOrders(null)).thenReturn(getListOrder());
+      when(orderService.getOrders(null,null,null,null,null)).thenReturn(getListOrder());
       OrderResource orderResource = new OrderResource();
       orderResource.setOrderService(orderService);
       orderResource.setUriInfo(uriInfoMock);
 
-      List<OrderDto> originalListOrderDto = orderResource.getOrders(null);
+      List<OrderDto> originalListOrderDto = orderResource.getOrders(null,null,null,null,null);
       OrderDto orderDto = new OrderDto();
       List<OrderDto> listOrderDto = Lists.newArrayList();
       Date date = new Date();
@@ -378,10 +381,10 @@ public class ResourceTest {
       orderDto.setStatus("Complete");
       orderDto.setUrl("http://test/sample/2");
 
+
       for (OrderDtoSample orderDtoSample : orderDtoSampleSet) {
          orderDtoSample.setId(2);
       }
-
       orderDto.setSamples(orderDtoSampleSet);
 
       listOrderDto.add(orderDto);
@@ -389,7 +392,84 @@ public class ResourceTest {
       assertThat(originalListOrderDto, containsInAnyOrder(listOrderDto.toArray()));
    }
 
-*/
+
+	//check orderResource.getOrders Exception Handling
+   @Test
+   public void test_Resource_12() throws Exception {
+
+      UriInfo uriInfoMock = mock(UriInfo.class);
+      UriBuilder uriBuilderMock = mock(UriBuilder.class);
+      when(uriInfoMock.getBaseUriBuilder()).thenReturn(uriBuilderMock);
+      when(uriInfoMock.getBaseUriBuilder().path("order")).thenReturn(uriBuilderMock);
+      when(uriInfoMock.getBaseUriBuilder()).thenReturn(uriBuilderMock);
+      when(uriInfoMock.getBaseUriBuilder().path("order/")).thenReturn(uriBuilderMock);
+
+      when(uriInfoMock.getBaseUriBuilder().build()).thenReturn(new URI("http://test/order"));
+      when(uriInfoMock.getBaseUriBuilder().path("order").build()).thenReturn(new URI("http://test/order"));
+
+      when(uriInfoMock.getBaseUriBuilder().path("user/")).thenReturn(uriBuilderMock);
+      when(uriInfoMock.getBaseUriBuilder().path("user/").build()).thenReturn(new URI("http://test/user/1"));
+      when(uriInfoMock.getBaseUriBuilder().path("sample/")).thenReturn(uriBuilderMock);
+      when(uriInfoMock.getBaseUriBuilder().path("sample/").build()).thenReturn(new URI("http://test/sample"));
+
+      //SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+      DateTime now = new DateTime();
+		DateTime dateNextYear = now.plusYears(1);
+		DateTime beforeOicrExisted = now.minusYears(1000);
+		Set<String> invalidUserIds= Sets.newHashSet("-1");
+
+      OrderService orderService = mock(OrderService.class);
+
+      when(orderService.getOrders(null,null,dateNextYear,null,null)).thenReturn(getEmptyOrderList());
+      when(orderService.getOrders(null,null,null,null,dateNextYear)).thenReturn(getEmptyOrderList());
+      when(orderService.getOrders(null,beforeOicrExisted,null,null,null)).thenReturn(getEmptyOrderList());
+      when(orderService.getOrders(invalidUserIds,null,null,null,null)).thenReturn(getEmptyOrderList());
+
+      OrderResource orderResource = new OrderResource();
+      orderResource.setOrderService(orderService);
+      orderResource.setUriInfo(uriInfoMock);
+
+		boolean flag_1 = false;
+		boolean flag_2 = false;
+		boolean flag_3 = false;
+		boolean flag_4 = false;
+
+ 		try {
+			List<OrderDto> originalListOrderDto = orderResource.getOrders(null,null,dateNextYear.toString(),null,null);
+		}
+		catch (NotFoundException e) {
+			flag_1 = true;
+		}
+ 		try {
+			List<OrderDto> originalListOrderDto2 = orderResource.getOrders(null,null,null,null,dateNextYear.toString());
+		}
+		catch (NotFoundException e) {
+			flag_2 = true;
+		}
+ 		try {
+			List<OrderDto> originalListOrderDto2 = orderResource.getOrders(null,beforeOicrExisted.toString(),null,null,null);
+		}
+		catch (NotFoundException e) {
+			flag_3 = true;
+		}
+ 		try {
+			List<OrderDto> originalListOrderDto2 = orderResource.getOrders(invalidUserIds,null,null,null,null);
+		}
+		catch (NotFoundException e) {
+			flag_4 = true;
+		}
+  
+	 	assertThat(flag_1, is(true));
+      assertThat(flag_2, is(true));
+      assertThat(flag_3, is(true));
+      assertThat(flag_4, is(true));
+   }
+
+	private List<Order> getEmptyOrderList() {
+		List<Order> emptyOrderList = Lists.newArrayList();
+		return emptyOrderList;
+	}
+
    private Order getOrder() {
       Order order = new DefaultOrder();
       Date date = new Date();
@@ -456,6 +536,8 @@ public class ResourceTest {
 
       return list;
    }
+
+
 
    @Test
    public void test_Resource__Run_1() throws Exception {
